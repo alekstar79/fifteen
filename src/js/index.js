@@ -6,7 +6,9 @@
   const countTiles = 16
   const shift = 100
 
-  let btn, matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId)))
+  let matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId))),
+      blankTile = countTiles,
+      btn
 
   function setPosition()
   {
@@ -22,7 +24,7 @@
   container.addEventListener('click', ({ target }) => {
     if (!(btn = target.closest('button'))) return
 
-    matrix = M.changePositionByClick(Number(btn.dataset.matrixId), matrix)
+    matrix = M.changePositionByClick(Number(btn.dataset.matrixId), matrix, blankTile)
 
     setPosition()
   })
@@ -31,6 +33,16 @@
     const shuffledArray = M.giveShuffledArray(matrix)
 
     matrix = M.getMatrix(shuffledArray)
+
+    setPosition()
+  })
+
+  window.addEventListener('keydown', ({ key }) => {
+    if (!key.toLowerCase().includes('arrow')) return
+
+    const direction = key.split('Arrow')[1].toLowerCase()
+
+    matrix = M.changePositionByKeydown(direction, matrix, blankTile)
 
     setPosition()
   })
@@ -65,12 +77,39 @@
         .map(({ value }) => value)
   }
 
-  changePositionByClick(number, matrix, blank = 16)
+  changePositionByClick(number, matrix, blank)
   {
     const coords1 = this.findCoordsByNumber(number, matrix)
     const coords2 = this.findCoordsByNumber(blank, matrix)
 
     return this.isValidForSwap(coords1, coords2)
+        ? this.swapTiles(coords1, coords2, matrix)
+        : matrix
+  }
+
+  changePositionByKeydown(direction, matrix, blank)
+  {
+    const coords2 = this.findCoordsByNumber(blank, matrix)
+    const coords1 = { x: coords2.x, y: coords2.y }
+
+    const maxIdx = matrix.length
+
+    switch (direction) {
+      case 'up':
+        coords1.y += 1
+        break
+      case 'down':
+        coords1.y -= 1
+        break
+      case 'left':
+        coords1.x += 1
+        break
+      case 'right':
+        coords1.x -= 1
+        break
+    }
+
+    return coords1.y < maxIdx && coords1.x < maxIdx && coords1.y >= 0 && coords1.x >= 0
         ? this.swapTiles(coords1, coords2, matrix)
         : matrix
   }
