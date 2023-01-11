@@ -1,36 +1,50 @@
-;(function(tools) {
+;(function(M) {
   const container = document.getElementById('fifteen')
   const nodes = Array.from(container.querySelectorAll('.item'))
   const shuffle = document.getElementById('shuffle')
+
   const countTiles = 16
+  const shift = 100
 
-  let matrix = tools.getMatrix(nodes.map(item => Number(item.dataset.matrixId)))
+  let btn, matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId)))
 
-  container.addEventListener('click', e => {
-    tools.changePositionByClick(matrix, e)
-  })
-  shuffle.addEventListener('click', () => {
-    matrix = tools.giveShuffledArray(matrix, nodes)
-  })
-
-  tools.setPositionMatrix(matrix, nodes)
-
-  nodes[countTiles - 1].style.display = 'none'
-})(new class {
-  constructor(shift = 100, blankTile = 16)
+  function setPosition()
   {
-    this.shift = shift
-    this.blankTile = blankTile
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        nodes[matrix[y][x] - 1].style.transform = `translate(${x * shift}%, ${y * shift}%)`
+      }
+    }
   }
 
+  nodes[countTiles - 1].style.display = 'none'
+
+  container.addEventListener('click', ({ target }) => {
+    if (!(btn = target.closest('button'))) return
+
+    matrix = M.changePositionByClick(Number(btn.dataset.matrixId), matrix)
+
+    setPosition()
+  })
+
+  shuffle.addEventListener('click', () => {
+    const shuffledArray = M.giveShuffledArray(matrix)
+
+    matrix = M.getMatrix(shuffledArray)
+
+    setPosition()
+  })
+
+  setPosition()
+
+})(new class Matrix {
   getMatrix(arr)
   {
     const matrix = [[], [], [], []]
 
-    let x = 0
-    let y = 0
+    let x, y, i
 
-    for (let i = 0; i < arr.length; i++) {
+    for (x = y = i = 0; i < arr.length; i++) {
       if (x >= 4) {
         x = 0
         y++
@@ -43,64 +57,26 @@
     return matrix
   }
 
-  setPositionMatrix(matrix, nodes)
+  giveShuffledArray(matrix)
   {
-    for (let y = 0; y < matrix.length; y++) {
-      for (let x = 0; x < matrix[y].length; x++) {
-        const node = nodes[matrix[y][x] - 1]
-
-        this.setNodeStyle(node, x, y)
-      }
-    }
-  }
-
-  setNodeStyle(node, x, y)
-  {
-    node.style.transform = `translate(${x * this.shift}%, ${y * this.shift}%)`
-  }
-
-  giveShuffledArray(matrix, nodes)
-  {
-    const shuffledArray = this.makeShuffledArray(matrix.flat())
-
-    this.setPositionMatrix(
-        matrix = this.getMatrix(shuffledArray),
-        nodes
-    )
-
-    return matrix
-  }
-
-  makeShuffledArray(arr)
-  {
-    return arr
+    return matrix.flat()
         .map(value => ({ value, k: Math.random() }))
         .sort((a, b) => a.k - b.k)
         .map(({ value }) => value)
   }
 
-  changePositionByClick(matrix, { target })
+  changePositionByClick(number, matrix, blank = 16)
   {
-    const btn = target.closest('button')
+    const coords1 = this.findCoordsByNumber(number, matrix)
+    const coords2 = this.findCoordsByNumber(blank, matrix)
 
-    if (!btn) return
-
-    const btnNumber = Number(btn.dataset.matrixId)
-    const isValid = this.isValidForSwap(
-        this.findCoordsByNumber(btnNumber, matrix),
-        this.findCoordsByNumber(matrix)
-    )
-
-    console.log({ btnNumber, isValid })
+    return this.isValidForSwap(coords1, coords2)
+        ? this.swapTiles(coords1, coords2, matrix)
+        : matrix
   }
 
   findCoordsByNumber(number, matrix)
   {
-    if (Array.isArray(number) && !matrix) {
-      matrix = number
-      number = this.blankTile
-    }
-
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
         if (matrix[y][x] === number) {
@@ -114,11 +90,21 @@
 
   isValidForSwap(coords1, coords2)
   {
-    if (coords1.x !== coords2.x && coords1.y !== coords2.y) return false
+    if (coords1?.x !== coords2?.x && coords1?.y !== coords2?.y) return false
 
     const diffX = Math.abs(coords1.x - coords2.x)
     const diffY = Math.abs(coords1.y - coords2.y)
 
     return (diffX === 1 || diffY === 1)
+  }
+
+  swapTiles(coords1, coords2, matrix)
+  {
+    const tmp = matrix[coords1.y][coords1.x]
+
+    matrix[coords1.y][coords1.x] = matrix[coords2.y][coords2.x]
+    matrix[coords2.y][coords2.x] = tmp
+
+    return matrix
   }
 })
