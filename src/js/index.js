@@ -1,47 +1,84 @@
-const containerNode = document.getElementById('fifteen')
-const itemNodes = Array.from(containerNode.querySelectorAll('.item'))
-const countItems = 16
-const shift = 100
+;(function(tools) {
+  const container = document.getElementById('fifteen')
+  const nodes = Array.from(container.querySelectorAll('.item'))
+  const shuffle = document.getElementById('shuffle')
+  const countItems = 16
 
-const matrix = getMatrix(itemNodes.map(item => Number(item.dataset.matrixId)))
+  const matrix = tools.getMatrix(nodes.map(item => Number(item.dataset.matrixId)))
 
-setPositionMatrix(matrix)
+  shuffle.addEventListener('click', tools.giveShuffledArray.bind(tools, matrix, nodes))
+  container.addEventListener('click', tools.changePositionTiles.bind(tools))
 
-itemNodes[countItems - 1].style.display = 'none'
+  tools.setPositionMatrix(matrix, nodes)
 
-function getMatrix(arr)
-{
-  const mx = [[], [], [], []]
-
-  let x = 0
-  let y = 0
-
-  for (let i = 0; i < arr.length; i++) {
-    if (x >= 4) {
-      x = 0
-      y++
-    }
-
-    mx[y][x] = arr[i]
-    x++
+  nodes[countItems - 1].style.display = 'none'
+})(new class {
+  constructor(shift = 100)
+  {
+    this.shift = shift
   }
 
-  return mx
-}
+  getMatrix(arr)
+  {
+    const mx = [[], [], [], []]
 
-function setPositionMatrix(matrix)
-{
-  for (let y = 0; y < matrix.length; y++) {
-    for (let x = 0; x < matrix[y].length; x++) {
-      const value = matrix[y][x]
-      const node = itemNodes[value - 1]
+    let x = 0
+    let y = 0
 
-      setNodeStyle(node, x, y)
+    for (let i = 0; i < arr.length; i++) {
+      if (x >= 4) {
+        x = 0
+        y++
+      }
+
+      mx[y][x] = arr[i]
+      x++
+    }
+
+    return mx
+  }
+
+  setPositionMatrix(matrix, nodes)
+  {
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        const value = matrix[y][x]
+        const node = nodes[value - 1]
+
+        this.setNodeStyle(node, x, y)
+      }
     }
   }
-}
 
-function setNodeStyle(node, x, y)
-{
-  node.style.transform = `translate3D(${x * shift}%, ${y * shift}%, 0)`
-}
+  setNodeStyle(node, x, y)
+  {
+    node.style.transform = `translate(${x * this.shift}%, ${y * this.shift}%)`
+  }
+
+  giveShuffledArray(matrix, nodes)
+  {
+    const shuffledArray = this.makeShuffledArray(matrix.flat())
+
+    this.setPositionMatrix(
+        this.getMatrix(shuffledArray),
+        nodes
+    )
+  }
+
+  makeShuffledArray(arr)
+  {
+    return arr
+        .map(value => ({ value, k: Math.random() }))
+        .sort((a, b) => a.k - b.k)
+        .map(({ value }) => value)
+  }
+
+  changePositionTiles({ target })
+  {
+    const btn = target.closest('button')
+
+    if (!btn) return
+
+    console.log(btn)
+  }
+})
