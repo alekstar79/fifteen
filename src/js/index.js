@@ -6,17 +6,42 @@
   const countTiles = 16
   const shift = 100
 
-  let matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId))),
+  let win = Array.from(Array(countTiles), (_, i) => i + 1),
+      matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId))),
       blankTile = countTiles,
       btn
 
-  function setPosition()
+  function setPosition(init)
   {
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
         nodes[matrix[y][x] - 1].style.transform = `translate(${x * shift}%, ${y * shift}%)`
       }
     }
+
+    if (!init && isWin()) {
+      setTimeout(() => {
+        container.classList.add('fifteenWin')
+
+        setTimeout(() => {
+          container.classList.remove('fifteenWin')
+        }, 1500)
+
+      }, 200)
+    }
+  }
+
+  function isWin()
+  {
+    const currentMatrix = matrix.flat()
+
+    for (let i = 0; i < win.length; i++) {
+      if (currentMatrix[i] !== win[i]) {
+        return false
+      }
+    }
+
+    return true
   }
 
   nodes[countTiles - 1].style.display = 'none'
@@ -47,9 +72,9 @@
     setPosition()
   })
 
-  setPosition()
+  setPosition(true)
 
-})(new class Matrix {
+})(new class /* Matrix */ {
   getMatrix(arr)
   {
     const matrix = [[], [], [], []]
