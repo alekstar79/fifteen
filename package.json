@@ -2,6 +2,10 @@
   "name": "fifteen",
   "version": "0.0.1",
   "description": "fifteen game",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:alekstar79/fifteen.git"
+  },
   "engines": {
     "node": ">=10",
     "npm": ">=6"

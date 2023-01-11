@@ -1,5 +1,5 @@
 doctype html
-html(lang="ru") 
+html(lang="ru")
     head
         meta(charset="utf-8")
         title Fifteen
@@ -7,4 +7,12 @@ html(lang="ru")
         link(rel="stylesheet" href="/css/reset.css")
         link(rel="stylesheet" href="/css/index.css")
     body
+        - var values = Array.from(Array(16), (_, i) => i + 1)
+        .page
+            h1 Игра «Пятнашки»
+            #fifteen.fifteen
+                each val in values
+                  button.item(data-matrix-id=val)
+                    span.itemVal= val
+            button.btn Перемешать
         script(src="/js/index.js")
