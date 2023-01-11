@@ -1,7 +1,8 @@
 ;(function(M) {
-  const container = document.getElementById('fifteen')
+  const page = document.querySelector('.page')
+  const container = document.querySelector('.fifteen')
   const nodes = Array.from(container.querySelectorAll('.item'))
-  const shuffle = document.getElementById('shuffle')
+  const shuffle = document.querySelector('.shuffle')
 
   const countTiles = 16
   const shift = 100
@@ -9,6 +10,9 @@
   let win = Array.from(Array(countTiles), (_, i) => i + 1),
       matrix = M.getMatrix(nodes.map(item => Number(item.dataset.matrixId))),
       blankTile = countTiles,
+      countShuffle = 150,
+      timer = null,
+      block = null,
       btn
 
   function setPosition(init)
@@ -19,7 +23,7 @@
       }
     }
 
-    if (!init && isWin()) {
+    if (!init && !timer && isWin()) {
       setTimeout(() => {
         container.classList.add('fifteenWin')
 
@@ -47,7 +51,7 @@
   nodes[countTiles - 1].style.display = 'none'
 
   container.addEventListener('click', ({ target }) => {
-    if (!(btn = target.closest('button'))) return
+    if (timer || !(btn = target.closest('button'))) return
 
     matrix = M.changePositionByClick(Number(btn.dataset.matrixId), matrix, blankTile)
 
@@ -55,15 +59,27 @@
   })
 
   shuffle.addEventListener('click', () => {
-    const shuffledArray = M.giveShuffledArray(matrix)
+    if (timer) return
 
-    matrix = M.getMatrix(shuffledArray)
+    page.classList.add('shuffling')
+    timer = setInterval(() => {
+      if (countShuffle <= 0) {
+        page.classList.remove('shuffling')
+        clearInterval(timer)
+        countShuffle = 150
+        timer = null
+      }
 
-    setPosition()
+      ({ matrix, block } = M.randomSwap(matrix, blankTile, block))
+      setPosition()
+
+      countShuffle--
+
+    }, 70)
   })
 
   window.addEventListener('keydown', ({ key }) => {
-    if (!key.toLowerCase().includes('arrow')) return
+    if (timer || !key.toLowerCase().includes('arrow')) return
 
     const direction = key.split('Arrow')[1].toLowerCase()
 
@@ -92,14 +108,6 @@
     }
 
     return matrix
-  }
-
-  giveShuffledArray(matrix)
-  {
-    return matrix.flat()
-        .map(value => ({ value, k: Math.random() }))
-        .sort((a, b) => a.k - b.k)
-        .map(({ value }) => value)
   }
 
   changePositionByClick(number, matrix, blank)
@@ -152,6 +160,23 @@
     return null
   }
 
+  findValidCoords(coords, blocked, matrix)
+  {
+    const validCoords = []
+
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        if (blocked && blocked.x === x && blocked.y === y) continue
+
+        if (this.isValidForSwap({ x, y }, coords)) {
+          validCoords.push({ x, y })
+        }
+      }
+    }
+
+    return validCoords[Math.random() * validCoords.length | 0]
+  }
+
   isValidForSwap(coords1, coords2)
   {
     if (coords1?.x !== coords2?.x && coords1?.y !== coords2?.y) return false
@@ -170,5 +195,16 @@
     matrix[coords2.y][coords2.x] = tmp
 
     return matrix
+  }
+
+  randomSwap(matrix, blank, block)
+  {
+    const coords2 = this.findCoordsByNumber(blank, matrix)
+    const coords1 = this.findValidCoords(coords2, block, matrix)
+
+    return {
+      matrix: this.swapTiles(coords1, coords2, matrix),
+      block: coords2
+    }
   }
 })

@@ -10,9 +10,9 @@ html(lang="ru")
         - var values = Array.from(Array(16), (_, i) => i + 1)
         .page
             h1 Игра «Пятнашки»
-            #fifteen.fifteen
+            .fifteen
                 each val in values
                   button.item(data-matrix-id=val)
                     span.itemVal= val
-            button#shuffle.btn Перемешать
+            button.shuffle.btn Перемешать
         script(src="/js/index.js")
