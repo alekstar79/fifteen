@@ -23,7 +23,7 @@ const srcImages = ['src/**/*.svg', 'src/**/*.jpg', 'src/**/*.gif', 'src/**/*.png
 
 function server() {
   return gulpConnect.server({
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     port: 4200,
     root: 'static/',
     livereload: true

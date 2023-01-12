@@ -1,12 +1,26 @@
-# Игра «Пятнашки»
+# Installation and launch of the game "Fifteen"
 
-### Установка и запуск проекта
-
-Скачиваете проект, заходите в него через консоль.
+### Project setup
 
 ```
 npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm serve
+```
+
+### Compiles and minifies for production
+```
+npm build
+```
+
+### Start server for production
+```
 npm start
 ```
 
-После запуска, заходите в браузер и проверяете, что есть доступ к http://localhost:8080.
+The app will be available on localhost:4200.
+
+![The main screen of the game "Fifteen"](src/img/fifteen.png)

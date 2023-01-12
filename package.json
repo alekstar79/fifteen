@@ -28,9 +28,9 @@
     "pug": "^2.0.4"
   },
   "scripts": {
-    "start": "gulp dev",
+    "serve": "gulp dev",
     "build": "NODE_ENV=production gulp build",
-    "clean": "gulp clean",
-    "server": "gulp server"
+    "start": "gulp server",
+    "clean": "gulp clean"
   }
 }
